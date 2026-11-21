@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard - {{ student.name }}{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner with Session State -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="p-4 bg-primary text-white rounded-4 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <span class="badge bg-light text-primary fw-bold mb-2">Student Portal</span>
+                <h2 class="fw-bold mb-1">Welcome back, {{ student.name }}!</h2>
+                <p class="mb-0 text-white-50">
+                    Registration No: <strong>{{ student.registration_number }}</strong> | Department: <strong>{{ student.get_department_display }}</strong>
+                </p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-white bg-opacity-25 px-3 py-2 d-inline-block">
+                    <i class="bi bi-clock-history me-1"></i> Last Active: {{ last_login_time }}
+                </span>
+                <div class="mt-2">
+                    <a href="{% url 'courses:list' %}" class="btn btn-warning btn-sm fw-bold">
+                        <i class="bi bi-plus-circle me-1"></i> Enroll in New Course
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card bg-primary text-white p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase small fw-bold mb-1">Enrolled Courses</h6>
+                    <h2 class="fw-bold mb-0">{{ enrolled_count }}</h2>
+                </div>
+                <div class="stat-icon bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card stat-card bg-warning text-dark p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-dark text-opacity-75 text-uppercase small fw-bold mb-1">Pending Tasks</h6>
+                    <h2 class="fw-bold mb-0">{{ pending_count }}</h2>
+                </div>
+                <div class="stat-icon bg-dark bg-opacity-10 text-dark">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card stat-card bg-success text-white p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase small fw-bold mb-1">Submitted Tasks</h6>
+                    <h2 class="fw-bold mb-0">{{ total_submissions }}</h2>
+                </div>
+                <div class="stat-icon bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-check2-all"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card stat-card bg-info text-dark p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-dark text-opacity-75 text-uppercase small fw-bold mb-1">Average Grade</h6>
+                    <h2 class="fw-bold mb-0">{{ avg_marks }}%</h2>
+                </div>
+                <div class="stat-icon bg-dark bg-opacity-10 text-dark">
+                    <i class="bi bi-award-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Pending Assignments To Do -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
+            <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-alarm text-warning me-2"></i> Upcoming Due Tasks</h5>
+                <span class="badge bg-warning text-dark">{{ pending_count }} Due</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Assignment</th>
+                                <th>Course</th>
+                                <th>Deadline</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assign in pending_assignments %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'assignments:detail' pk=assign.pk %}" class="fw-bold text-decoration-none text-dark">
+                                            {{ assign.assignment_title }}
+                                        </a>
+                                    </td>
+                                    <td><span class="badge bg-secondary-subtle text-dark">{{ assign.course.course_code }}</span></td>
+                                    <td>
+                                        {% if assign.is_past_due %}
+                                            <span class="text-danger small fw-bold"><i class="bi bi-exclamation-triangle"></i> Overdue</span>
+                                        {% else %}
+                                            <span class="text-muted small">{{ assign.deadline|date:"M d, H:i" }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'assignments:submit' pk=assign.pk %}" class="btn btn-sm btn-primary">
+                                            Submit &rarr;
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        <i class="bi bi-check-circle text-success fs-3 d-block mb-1"></i>
+                                        All caught up! No pending assignments currently due.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enrolled Courses -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
+            <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-book-half text-info me-2"></i> My Enrolled Courses</h5>
+                <span class="badge bg-info text-dark">{{ enrolled_count }} Courses</span>
+            </div>
+            <div class="card-body p-3">
+                <div class="list-group list-group-flush">
+                    {% for course in enrolled_courses %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-2 py-3">
+                            <div>
+                                <span class="badge bg-primary-subtle text-primary fw-bold me-2">{{ course.course_code }}</span>
+                                <a href="{% url 'courses:detail' pk=course.pk %}" class="fw-semibold text-decoration-none text-dark">
+                                    {{ course.course_name }}
+                                </a>
+                                <small class="text-muted d-block mt-1">{{ course.credits }} Credits &bull; {{ course.get_assignments_count }} Assignments</small>
+                            </div>
+                            <a href="{% url 'courses:detail' pk=course.pk %}" class="btn btn-sm btn-outline-secondary">
+                                View Syllabus
+                            </a>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-journal-x fs-3 d-block mb-1"></i>
+                            You are not enrolled in any courses yet.
+                            <div class="mt-2">
+                                <a href="{% url 'courses:list' %}" class="btn btn-sm btn-primary">Browse Catalog</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- My Recent Submissions -->
+<div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0"><i class="bi bi-clipboard-check text-success me-2"></i> Recent Submission History</h5>
+        <span class="badge bg-secondary">{{ total_submissions }} Total Submissions</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Assignment</th>
+                        <th>Course</th>
+                        <th>Submitted At</th>
+                        <th>Status</th>
+                        <th>Marks</th>
+                        <th>Feedback</th>
+                        <th class="text-end">View</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in my_submissions %}
+                        <tr>
+                            <td class="fw-semibold">{{ sub.assignment.assignment_title }}</td>
+                            <td><span class="badge bg-secondary-subtle text-dark">{{ sub.assignment.course.course_code }}</span></td>
+                            <td class="small text-muted">{{ sub.submission_date|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if sub.status == 'Graded' %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Graded</span>
+                                {% elif sub.status == 'Late' %}
+                                    <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Submitted Late</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Under Review</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sub.marks_obtained is not None %}
+                                    <strong class="text-success">{{ sub.marks_obtained }}</strong> / {{ sub.assignment.max_marks }}
+                                {% else %}
+                                    <span class="text-muted">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted">
+                                {{ sub.feedback|default:"No feedback yet"|truncatewords:8 }}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'assignments:detail' pk=sub.assignment.pk %}" class="btn btn-sm btn-outline-primary">
+                                    Details
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                No submissions made yet.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

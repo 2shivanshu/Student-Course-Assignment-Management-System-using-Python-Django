@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Faculty & Administrator Console{% endblock %}
+
+{% block content %}
+<!-- Admin Console Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="p-4 bg-dark text-white rounded-4 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <span class="badge bg-warning text-dark fw-bold mb-2">Faculty / Administrator Console</span>
+                <h2 class="fw-bold mb-1">Academic Administration Hub</h2>
+                <p class="mb-0 text-white-50">
+                    Manage student profiles, configure course curriculum, post assignments, and evaluate submissions.
+                </p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'students:create' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-person-plus-fill me-1"></i> Add Student
+                </a>
+                <a href="{% url 'courses:create' %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-journal-plus me-1"></i> Add Course
+                </a>
+                <a href="{% url 'assignments:create' %}" class="btn btn-warning btn-sm">
+                    <i class="bi bi-file-earmark-plus me-1"></i> Post Assignment
+                </a>
+                <a href="/admin/" target="_blank" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-shield-shaded me-1"></i> Django Admin Site
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card bg-primary text-white p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase small fw-bold mb-1">Registered Students</h6>
+                    <h2 class="fw-bold mb-0">{{ total_students }}</h2>
+                </div>
+                <div class="stat-icon bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card stat-card bg-success text-white p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase small fw-bold mb-1">Active Courses</h6>
+                    <h2 class="fw-bold mb-0">{{ total_courses }}</h2>
+                </div>
+                <div class="stat-icon bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-journal-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card stat-card bg-secondary text-white p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase small fw-bold mb-1">Total Assignments</h6>
+                    <h2 class="fw-bold mb-0">{{ total_assignments }}</h2>
+                </div>
+                <div class="stat-icon bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-card-checklist"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card stat-card bg-danger text-white p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase small fw-bold mb-1">Needs Grading</h6>
+                    <h2 class="fw-bold mb-0">{{ pending_grading_count }}</h2>
+                </div>
+                <div class="stat-icon bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Submissions Awaiting Grading -->
+<div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">
+            <i class="bi bi-hourglass-top text-warning me-2"></i> Submissions Awaiting Evaluation
+        </h5>
+        <span class="badge bg-warning text-dark">{{ pending_grading_count }} Pending</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student</th>
+                        <th>Registration No</th>
+                        <th>Assignment</th>
+                        <th>Course</th>
+                        <th>Submission Time</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in pending_grading %}
+                        <tr>
+                            <td class="fw-bold">
+                                <a href="{% url 'students:detail' pk=sub.student.pk %}" class="text-decoration-none text-dark">
+                                    {{ sub.student.name }}
+                                </a>
+                            </td>
+                            <td><code>{{ sub.student.registration_number }}</code></td>
+                            <td>{{ sub.assignment.assignment_title }}</td>
+                            <td><span class="badge bg-secondary-subtle text-dark">{{ sub.assignment.course.course_code }}</span></td>
+                            <td class="small text-muted">{{ sub.submission_date|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if sub.status == 'Late' %}
+                                    <span class="badge bg-danger">Late Submission</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Submitted</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'assignments:grade' pk=sub.pk %}" class="btn btn-sm btn-success">
+                                    <i class="bi bi-check-lg me-1"></i> Grade Now
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                <i class="bi bi-check2-circle text-success fs-3 d-block mb-1"></i>
+                                Great job! All submitted student assignments have been graded.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Recent Students -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
+            <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="bi bi-people me-2"></i> Recently Registered Students</h6>
+                <a href="{% url 'students:list' %}" class="btn btn-outline-light btn-sm py-0">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for st in recent_students %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-3 py-2">
+                            <div>
+                                <span class="fw-bold">{{ st.name }}</span>
+                                <small class="text-muted d-block">{{ st.registration_number }} &bull; {{ st.get_department_display }}</small>
+                            </div>
+                            <a href="{% url 'students:detail' pk=st.pk %}" class="btn btn-xs btn-outline-primary btn-sm">
+                                View Profile
+                            </a>
+                        </div>
+                    {% empty %}
+                        <div class="p-3 text-muted text-center">No students registered yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Courses with Enrollments -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
+            <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="bi bi-journal-bookmark me-2"></i> High Enrollment Courses</h6>
+                <a href="{% url 'courses:list' %}" class="btn btn-outline-light btn-sm py-0">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for cr in popular_courses %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-3 py-2">
+                            <div>
+                                <span class="badge bg-primary-subtle text-primary fw-bold me-1">{{ cr.course_code }}</span>
+                                <span class="fw-semibold">{{ cr.course_name }}</span>
+                            </div>
+                            <span class="badge bg-success-subtle text-success fw-bold">
+                                {{ cr.enrollment_count }} Enrolled
+                            </span>
+                        </div>
+                    {% empty %}
+                        <div class="p-3 text-muted text-center">No courses configured yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

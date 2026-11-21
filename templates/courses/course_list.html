@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Course Curriculum Catalog - {{ total_count }} Courses{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-7">
+        <h2 class="fw-bold mb-1"><i class="bi bi-journal-bookmark-fill text-success me-2"></i> Course Curriculum Catalog</h2>
+        <p class="text-secondary mb-0">Browse subjects, credit ratings, assignments, and enroll directly into your syllabus courses.</p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        {% if user.is_staff or user.is_superuser %}
+            <a href="{% url 'courses:create' %}" class="btn btn-success">
+                <i class="bi bi-journal-plus me-1"></i> Add New Course
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card shadow-sm border-0 rounded-4 mb-4 bg-light">
+    <div class="card-body p-3">
+        <form method="GET" action="{% url 'courses:list' %}" class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by course code, title, or keywords..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="department" class="form-select">
+                    <option value="">All Departments</option>
+                    {% for code, label in departments %}
+                        <option value="{{ code }}" {% if dept_filter == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-dark">
+                    <i class="bi bi-funnel me-1"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Courses Grid (Unit 3: DTL Card Rendering) -->
+<div class="row g-4 mb-4">
+    {% for course in courses %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border rounded-4 d-flex flex-column">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary-subtle text-primary fw-bold fs-6">{{ course.course_code }}</span>
+                        <span class="badge bg-secondary-subtle text-dark">{{ course.credits }} Credits</span>
+                    </div>
+
+                    <h5 class="card-title fw-bold text-dark mt-2 mb-2">{{ course.course_name }}</h5>
+
+                    <p class="card-text text-secondary small flex-grow-1">
+                        {{ course.description|truncatewords:22 }}
+                    </p>
+
+                    <div class="mb-3 d-flex gap-2 flex-wrap">
+                        <span class="badge bg-light text-dark border">
+                            <i class="bi bi-building me-1"></i> {{ course.department }}
+                        </span>
+                        <span class="badge bg-light text-dark border">
+                            <i class="bi bi-people me-1"></i> {{ course.student_count|default:course.students.count }} Enrolled
+                        </span>
+                        <span class="badge bg-light text-dark border">
+                            <i class="bi bi-file-earmark-text me-1"></i> {{ course.assignments.count }} Tasks
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
+                        <a href="{% url 'courses:detail' pk=course.pk %}" class="btn btn-sm btn-outline-secondary">
+                            View Syllabus &rarr;
+                        </a>
+
+                        {% if user.is_authenticated and current_student %}
+                            {% if course.id in enrolled_course_ids %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-2">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Enrolled
+                                </span>
+                            {% else %}
+                                <form method="POST" action="{% url 'courses:enroll' pk=course.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-plus-circle me-1"></i> Enroll
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="card p-5 text-center shadow-sm border-0 bg-light rounded-4">
+                <i class="bi bi-journal-x fs-1 text-secondary mb-2"></i>
+                <h5>No courses found</h5>
+                <p class="text-muted small">No courses match the current query or department filter.</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

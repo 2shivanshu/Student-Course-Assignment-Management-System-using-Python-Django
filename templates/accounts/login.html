@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - University Academic Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-md-5">
+        <div class="card shadow border-0 rounded-4">
+            <div class="card-header bg-dark text-white text-center py-4 rounded-top-4">
+                <i class="bi bi-person-circle fs-1 text-primary"></i>
+                <h4 class="fw-bold mt-2 mb-0">Sign In to Your Account</h4>
+                <small class="text-white-50">Student & Faculty Academic Portal</small>
+            </div>
+            <div class="card-body p-4">
+                <!-- Unit 4: Form rendering with CSRF protection -->
+                <form method="POST" action="{% url 'accounts:login' %}" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Username Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold">
+                            <i class="bi bi-person me-1"></i> Username
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label fw-semibold">
+                            <i class="bi bi-lock me-1"></i> Password
+                        </label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Remember Me (Unit 6: Session Management) -->
+                    <div class="form-check mb-4">
+                        {{ form.remember_me }}
+                        <label class="form-check-label text-secondary small" for="{{ form.remember_me.id_for_label }}">
+                            Keep me logged in for 2 weeks (Persist Session)
+                        </label>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Authenticate & Login
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center pt-3 border-top">
+                    <p class="text-secondary small mb-2">New student without an account?</p>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-outline-success btn-sm px-3">
+                        <i class="bi bi-person-plus me-1"></i> Create Student Account
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer bg-light p-3 rounded-bottom-4 small text-secondary">
+                <i class="bi bi-info-circle-fill text-info me-1"></i>
+                <strong>Viva Demo Credentials:</strong>
+                <br>Staff: <code>admin</code> / <code>admin123</code>
+                <br>Student: <code>student1</code> / <code>pass123</code>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

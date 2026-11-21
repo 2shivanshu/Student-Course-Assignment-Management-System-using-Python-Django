@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Unit 6: Cookies and Sessions Interactive Lab{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="p-4 bg-primary text-white rounded-4 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <span class="badge bg-warning text-dark mb-2 fw-bold">INT253 Unit 6 Practical Lab</span>
+                <h2 class="fw-bold mb-1"><i class="bi bi-cookie me-2"></i> Cookies, Sessions & HTTP State Management</h2>
+                <p class="mb-0 text-white-50">
+                    Interactive demonstration of <code>request.session</code> and <code>request.COOKIES</code> with live browser state manipulation.
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'home' %}" class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left me-1"></i> Return Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Section 1: Server-Side Sessions (request.session) -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
+            <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-server text-info me-2"></i> 1. Django Server-Side Sessions
+                </h5>
+                <span class="badge bg-info text-dark">Stored in SQLite</span>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-secondary small">
+                    HTTP is a stateless protocol. Django creates a session identifier stored in client cookies (<code>sessionid</code>) while the actual dictionary data resides securely on the server in the <code>django_session</code> database table.
+                </p>
+
+                <!-- Session Metrics -->
+                <div class="bg-light p-3 rounded-3 border mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Active Session Key:</span>
+                        <code class="small fw-bold">{{ session_key|default:"None (New Session)" }}</code>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Global Page Visits (Session):</span>
+                        <span class="badge bg-primary fs-6">{{ session_visit_count|default:1 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small">Lab Session Counter:</span>
+                        <span class="badge bg-success fs-6">{{ session_data.lab_counter|default:0 }}</span>
+                    </div>
+                </div>
+
+                <!-- Session Action Buttons -->
+                <h6 class="fw-bold small text-uppercase text-secondary mb-2">Session Operations:</h6>
+                <div class="d-flex gap-2 flex-wrap mb-4">
+                    <form method="POST" action="{% url 'accounts:session_cookie_demo' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="increment_session">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-plus-circle me-1"></i> Increment Counter (+1)
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{% url 'accounts:session_cookie_demo' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reset_session_counter">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Counter
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Raw Session Content Inspector -->
+                <h6 class="fw-bold small text-uppercase text-secondary mb-2">Current Session Dictionary (request.session):</h6>
+                <div class="code-preview p-3 rounded-3 mb-0" style="max-height: 180px; overflow-y: auto;">
+{% if session_data %}
+{% for key, val in session_data.items %}
+<div><span class="text-warning">"{{ key }}"</span>: <span class="text-info">"{{ val }}"</span></div>
+{% endfor %}
+{% else %}
+<span class="text-muted">No custom session variables stored yet.</span>
+{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Client-Side Cookies (request.COOKIES) -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
+            <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-browser-chrome text-warning me-2"></i> 2. Client-Side HTTP Cookies
+                </h5>
+                <span class="badge bg-warning text-dark">Stored in Browser</span>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-secondary small">
+                    Cookies are small text fragments sent between browser and server via HTTP headers (<code>Set-Cookie</code> in response, <code>Cookie</code> in request). Use the controls below to change themes and save custom cookies.
+                </p>
+
+                <!-- Set Cookie Form -->
+                <form method="POST" action="{% url 'accounts:session_cookie_demo' %}" class="mb-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="set_cookie">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Select Application Theme Cookie:</label>
+                        {{ form.theme }}
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Custom Cookie Key:</label>
+                            {{ form.custom_key }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Custom Cookie Value:</label>
+                            {{ form.custom_value }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="bi bi-save me-1"></i> Set HTTP Cookie
+                        </button>
+                    </div>
+                </form>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold small text-uppercase text-secondary mb-0">Browser Cookies (request.COOKIES):</h6>
+                    <form method="POST" action="{% url 'accounts:session_cookie_demo' %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="clear_cookies">
+                        <button type="submit" class="btn btn-xs btn-outline-danger btn-sm">
+                            <i class="bi bi-trash3 me-1"></i> Clear Cookies
+                        </button>
+                    </form>
+                </div>
+
+                <div class="code-preview p-3 rounded-3 mb-0" style="max-height: 140px; overflow-y: auto;">
+{% if cookies_data %}
+{% for key, val in cookies_data.items %}
+<div><span class="text-warning">"{{ key }}"</span>: <span class="text-light">"{{ val }}"</span></div>
+{% endfor %}
+{% else %}
+<span class="text-muted">No cookies received in request headers.</span>
+{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Viva & Examination Quick Reference Guide -->
+<div class="card shadow-sm border-0 rounded-4 bg-light">
+    <div class="card-body p-4">
+        <h5 class="fw-bold text-dark mb-3">
+            <i class="bi bi-mortarboard-fill text-primary me-2"></i> Viva & Examination Checklist for INT253 Unit 6
+        </h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded-3 border h-100">
+                    <h6 class="fw-bold text-primary"><i class="bi bi-question-circle me-1"></i> Cookie vs Session</h6>
+                    <small class="text-secondary">
+                        <strong>Cookies</strong> store small data (&le;4KB) directly in client browser headers.
+                        <strong>Sessions</strong> store data securely on the web server (SQLite/Redis); only the random 32-character <code>sessionid</code> is sent to the client.
+                    </small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded-3 border h-100">
+                    <h6 class="fw-bold text-success"><i class="bi bi-code-square me-1"></i> Django Syntax Reference</h6>
+                    <small class="text-secondary">
+                        <code>request.session['key'] = value</code><br>
+                        <code>request.session.get('key', default)</code><br>
+                        <code>response.set_cookie('name', val, max_age)</code><br>
+                        <code>request.COOKIES.get('name')</code>
+                    </small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded-3 border h-100">
+                    <h6 class="fw-bold text-danger"><i class="bi bi-shield-check me-1"></i> Built-in Authentication</h6>
+                    <small class="text-secondary">
+                        Uses <code>authenticate()</code> to verify PBKDF2 password hashes, <code>login()</code> to tie user PK to current session, and the <code>@login_required</code> decorator to protect endpoints.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

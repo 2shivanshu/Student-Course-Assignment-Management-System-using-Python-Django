@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - University Academic Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="p-5 mb-4 bg-light rounded-4 shadow-sm border border-primary-subtle">
+    <div class="container-fluid py-2">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle mb-2 px-3 py-2 rounded-pill fw-semibold">
+                    <i class="bi bi-patch-check-fill me-1"></i> INT253 Course Demonstration Project
+                </span>
+                <h1 class="display-5 fw-bold text-dark mb-3">
+                    Student Course & Assignment Management System
+                </h1>
+                <p class="col-md-11 fs-5 text-secondary">
+                    A comprehensive, full-stack university management platform built with Python Django.
+                    Engineered to demonstrate every unit of <strong>INT253: Web Development in Python using Django</strong>,
+                    covering MVT Architecture, Function-Based Views, DTL Inheritance, Forms & Validation, SQLite ORM, and State Management.
+                </p>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff %}
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-warning btn-lg px-4">
+                                <i class="bi bi-shield-lock-fill me-1"></i> Open Faculty Console
+                            </a>
+                        {% else %}
+                            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-speedometer2 me-1"></i> Go to Student Dashboard
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-person-plus-fill me-1"></i> Student Registration
+                        </a>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-dark btn-lg px-4">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Member Login
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'courses:list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="bi bi-journal-text me-1"></i> Browse Courses
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block">
+                <div class="p-4 bg-white rounded-4 shadow border text-start">
+                    <h6 class="text-uppercase text-muted fw-bold mb-3 small">
+                        <i class="bi bi-cpu me-1 text-primary"></i> Technology Stack
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="py-2 border-bottom d-flex justify-content-between">
+                            <span><i class="bi bi-filetype-py text-warning me-2"></i> Backend Framework</span>
+                            <span class="badge bg-dark">Django 5+</span>
+                        </li>
+                        <li class="py-2 border-bottom d-flex justify-content-between">
+                            <span><i class="bi bi-database text-info me-2"></i> Database</span>
+                            <span class="badge bg-info text-dark">SQLite3 ORM</span>
+                        </li>
+                        <li class="py-2 border-bottom d-flex justify-content-between">
+                            <span><i class="bi bi-code-slash text-danger me-2"></i> Architecture</span>
+                            <span class="badge bg-secondary">Django MVT</span>
+                        </li>
+                        <li class="py-2 border-bottom d-flex justify-content-between">
+                            <span><i class="bi bi-bootstrap text-primary me-2"></i> Frontend UI</span>
+                            <span class="badge bg-primary">Bootstrap 5</span>
+                        </li>
+                        <li class="py-2 d-flex justify-content-between">
+                            <span><i class="bi bi-shield-check text-success me-2"></i> Security</span>
+                            <span class="badge bg-success">CSRF + Auth</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Statistics (Unit 5: ORM Aggregate Queries) -->
+<div class="row g-3 mb-5">
+    <div class="col-md-4">
+        <div class="card stat-card bg-primary text-white p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase mb-1 small fw-bold">Total Students</h6>
+                    <h2 class="fw-bold mb-0">{{ total_students }}</h2>
+                    <small class="text-white-50">Enrolled across departments</small>
+                </div>
+                <div class="stat-icon bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <div class="mt-3 pt-2 border-top border-white border-opacity-25">
+                <a href="{% url 'students:list' %}" class="text-white text-decoration-none small d-flex justify-content-between align-items-center">
+                    <span>View Student Directory</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card stat-card bg-success text-white p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase mb-1 small fw-bold">Available Courses</h6>
+                    <h2 class="fw-bold mb-0">{{ total_courses }}</h2>
+                    <small class="text-white-50">Active syllabus subjects</small>
+                </div>
+                <div class="stat-icon bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-journal-code"></i>
+                </div>
+            </div>
+            <div class="mt-3 pt-2 border-top border-white border-opacity-25">
+                <a href="{% url 'courses:list' %}" class="text-white text-decoration-none small d-flex justify-content-between align-items-center">
+                    <span>Explore Course Catalog</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card stat-card bg-indigo text-white p-3 h-100" style="background-color: #6366f1;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase mb-1 small fw-bold">Assignments Posted</h6>
+                    <h2 class="fw-bold mb-0">{{ total_assignments }}</h2>
+                    <small class="text-white-50">Practical tasks & submissions</small>
+                </div>
+                <div class="stat-icon bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-card-checklist"></i>
+                </div>
+            </div>
+            <div class="mt-3 pt-2 border-top border-white border-opacity-25">
+                <a href="{% url 'assignments:list' %}" class="text-white text-decoration-none small d-flex justify-content-between align-items-center">
+                    <span>Check Deadlines & Submissions</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Syllabus Coverage Highlights (Units 1 - 6) -->
+<div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-book-half text-primary me-2"></i> INT253 University Syllabus Mapping
+        </h4>
+        <span class="badge bg-secondary">Units I – VI Fully Implemented</span>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 bg-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary me-2">Unit 1 & 2</span>
+                        <h6 class="fw-bold mb-0">Setup, FBVs & Routing</h6>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        Multi-app architecture (<code>students</code>, <code>courses</code>, <code>assignments</code>, <code>accounts</code>).
+                        Function-based views, <code>render()</code>, path converters (<code>&lt;int:pk&gt;</code>) and regex routing via <code>re_path()</code>.
+                    </p>
+                    <a href="{% url 'courses:list' %}" class="small text-primary fw-semibold text-decoration-none">Test Routing & Converters &rarr;</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 bg-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-success me-2">Unit 3 & 4</span>
+                        <h6 class="fw-bold mb-0">DTL & ModelForms</h6>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        Template inheritance with <code>base.html</code>, DTL loops/filters, <code>csrf_token</code>, server-side validation (phone, unique reg numbers), and PRG pattern with flash messages.
+                    </p>
+                    <a href="{% url 'accounts:register' %}" class="small text-success fw-semibold text-decoration-none">Test Form Validation &rarr;</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 bg-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-warning text-dark me-2">Unit 5 & 6</span>
+                        <h6 class="fw-bold mb-0">ORM, Admin & Cookies</h6>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        Relational schema (OneToOne, ForeignKey, ManyToMany), customized Django Admin with fieldsets, session tracking, and client-side cookie manipulation.
+                    </p>
+                    <a href="{% url 'accounts:session_cookie_demo' %}" class="small text-warning text-dark fw-semibold text-decoration-none">Interactive Cookie Lab &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Courses Section (Unit 3: DTL for loops & filters) -->
+<div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-journal-bookmark-fill text-success me-2"></i> Featured Courses
+        </h4>
+        <a href="{% url 'courses:list' %}" class="btn btn-sm btn-outline-primary">
+            View All Courses ({{ total_courses }}) <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+
+    <div class="row g-3">
+        {% for course in featured_courses %}
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary-subtle text-primary fw-bold">{{ course.course_code }}</span>
+                            <span class="badge bg-secondary-subtle text-dark">{{ course.credits }} Credits</span>
+                        </div>
+                        <h5 class="card-title fw-bold">{{ course.course_name }}</h5>
+                        <p class="card-text text-secondary small flex-grow-1">
+                            {{ course.description|truncatewords:20 }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                            <small class="text-muted">
+                                <i class="bi bi-people me-1"></i> {{ course.students.count }} Enrolled
+                            </small>
+                            <a href="{% url 'courses:detail' pk=course.pk %}" class="btn btn-sm btn-outline-success">
+                                View Syllabus &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-1"></i> No courses found. You can populate sample data by clicking the seed button in the faculty console.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

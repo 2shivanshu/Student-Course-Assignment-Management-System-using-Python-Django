@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: student-management-system
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn student_management.wsgi:application"
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
